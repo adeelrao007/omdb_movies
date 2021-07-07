@@ -2,49 +2,29 @@
 
 declare(strict_types=1);
 
-use Laminas\Mvc\Application;
-use Laminas\Stdlib\ArrayUtils;
-
-/**
- * Display all errors when APPLICATION_ENV is development.
- */
-if ($_SERVER['APPLICATION_ENV'] === 'development') {
-    error_reporting(E_ALL);
-    ini_set("display_errors", '1');
+// Delegate static file requests back to the PHP built-in webserver
+if (PHP_SAPI === 'cli-server' && $_SERVER['SCRIPT_FILENAME'] !== __FILE__) {
+    return false;
 }
 
-/**
- * This makes our life easier when dealing with paths. Everything is relative
- * to the application root now.
- */
 chdir(dirname(__DIR__));
+require 'vendor/autoload.php';
 
-// Decline static file requests back to the PHP built-in webserver
-if (php_sapi_name() === 'cli-server') {
-    $path = realpath(__DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
-    if (is_string($path) && __FILE__ !== $path && is_file($path)) {
-        return false;
-    }
-    unset($path);
-}
+/**
+ * Self-called anonymous function that creates its own scope and keeps the global namespace clean.
+ */
+(function () {
+    /** @var \Psr\Container\ContainerInterface $container */
+    $container = require 'config/container.php';
 
-// Composer autoloading
-include __DIR__ . '/../vendor/autoload.php';
+    /** @var \Mezzio\Application $app */
+    $app = $container->get(\Mezzio\Application::class);
+    $factory = $container->get(\Mezzio\MiddlewareFactory::class);
 
-if (! class_exists(Application::class)) {
-    throw new RuntimeException(
-        "Unable to load application.\n"
-        . "- Type `composer install` if you are developing locally.\n"
-        . "- Type `vagrant ssh -c 'composer install'` if you are using Vagrant.\n"
-        . "- Type `docker-compose run laminas composer install` if you are using Docker.\n"
-    );
-}
+    // Execute programmatic/declarative middleware pipeline and routing
+    // configuration statements
+    (require 'config/pipeline.php')($app, $factory, $container);
+    (require 'config/routes.php')($app, $factory, $container);
 
-// Retrieve configuration
-$appConfig = require __DIR__ . '/../config/application.config.php';
-if (file_exists(__DIR__ . '/../config/development.config.php')) {
-    $appConfig = ArrayUtils::merge($appConfig, require __DIR__ . '/../config/development.config.php');
-}
-
-// Run the application!
-Application::init($appConfig)->run();
+    $app->run();
+})();

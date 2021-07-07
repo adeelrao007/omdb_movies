@@ -1,260 +1,172 @@
-# laminas-mvc-skeleton
+# Mezzio Skeleton and Installer
 
-## Introduction
+[![Build Status](https://github.com/mezzio/mezzio-skeleton/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/mezzio/mezzio-skeleton/actions/workflows/continuous-integration.yml)
 
-This is a skeleton application using the Laminas MVC layer and module
-systems. This application is meant to be used as a starting place for those
-looking to get their feet wet with Laminas MVC.
+*Begin developing PSR-15 middleware applications in seconds!*
 
-## Installation using Composer
+[mezzio](https://github.com/mezzio/mezzio) builds on
+[laminas-stratigility](https://github.com/laminas/laminas-stratigility) to
+provide a minimalist PSR-15 middleware framework for PHP with routing, DI
+container, optional templating, and optional error handling capabilities.
 
-The easiest way to create a new Laminas MVC project is to use
-[Composer](https://getcomposer.org/). If you don't have it already installed,
-then please install as per the [documentation](https://getcomposer.org/doc/00-intro.md).
+This installer will setup a skeleton application based on mezzio by
+choosing optional packages based on user input as demonstrated in the following
+screenshot:
 
-To create your new Laminas MVC project:
+![screenshot-installer](https://user-images.githubusercontent.com/1011217/90332191-55d32200-dfbb-11ea-80c0-27a07ef5691a.png)
 
-```bash
-$ composer create-project -sdev laminas/laminas-mvc-skeleton path/to/install
-```
+The user selected packages are saved into `composer.json` so that everyone else
+working on the project have the same packages installed. Configuration files and
+templates are prepared for first use. The installer command is removed from
+`composer.json` after setup succeeded, and all installer related files are
+removed.
 
-Once installed, you can test it out immediately using PHP's built-in web server:
+## Getting Started
 
-```bash
-$ cd path/to/install
-$ php -S 0.0.0.0:8080 -t public
-# OR use the composer alias:
-$ composer run --timeout 0 serve
-```
-
-This will start the cli-server on port 8080, and bind it to all network
-interfaces. You can then visit the site at http://localhost:8080/
-- which will bring up Laminas MVC Skeleton welcome page.
-
-**Note:** The built-in CLI server is *for development only*.
-
-## Development mode
-
-The skeleton ships with [laminas-development-mode](https://github.com/laminas/laminas-development-mode)
-by default, and provides three aliases for consuming the script it ships with:
+Start your new Mezzio project with composer:
 
 ```bash
-$ composer development-enable  # enable development mode
-$ composer development-disable # disable development mode
-$ composer development-status  # whether or not development mode is enabled
+$ composer create-project mezzio/mezzio-skeleton <project-path>
 ```
 
-You may provide development-only modules and bootstrap-level configuration in
-`config/development.config.php.dist`, and development-only application
-configuration in `config/autoload/development.local.php.dist`. Enabling
-development mode will copy these files to versions removing the `.dist` suffix,
-while disabling development mode will remove those copies.
-
-Development mode is automatically enabled as part of the skeleton installation process. 
-After making changes to one of the above-mentioned `.dist` configuration files you will
-either need to disable then enable development mode for the changes to take effect,
-or manually make matching updates to the `.dist`-less copies of those files.
-
-## Running Unit Tests
-
-To run the supplied skeleton unit tests, you need to do one of the following:
-
-- During initial project creation, select to install the MVC testing support.
-- After initial project creation, install [laminas-test](https://docs.laminas.dev/laminas-test/):
-
-  ```bash
-  $ composer require --dev laminas/laminas-test
-  ```
-
-Once testing support is present, you can run the tests using:
+After choosing and installing the packages you want, go to the
+`<project-path>` and start PHP's built-in web server to verify installation:
 
 ```bash
-$ ./vendor/bin/phpunit
+$ composer run --timeout=0 serve
 ```
 
-If you need to make local modifications for the PHPUnit test setup, copy
-`phpunit.xml.dist` to `phpunit.xml` and edit the new file; the latter has
-precedence over the former when running tests, and is ignored by version
-control. (If you want to make the modifications permanent, edit the
-`phpunit.xml.dist` file.)
+You can then browse to http://localhost:8080.
 
-## Running Psalm Static Analysis
-
-To run the supplied skeleton static analysis, you need to do one of the following:
-It is recommended to install the test components from laminas (laminas/laminas-test), 
-as this is used in the tests supplied.
-
-  ```bash
-  $ composer require --dev vimeo/psalm psalm/plugin-phpunit laminas/laminas-test
-  ```
-
-Once psalm support is present, you can run the static analysis using:
-
-```bash
-$ composer static-analysis
-```
-
-## Using Vagrant
-
-This skeleton includes a `Vagrantfile` based on ubuntu 18.04 (bento box)
-with configured Apache2 and PHP 7.3. Start it up using:
-
-```bash
-$ vagrant up
-```
-
-Once built, you can also run composer within the box. For example, the following
-will install dependencies:
-
-```bash
-$ vagrant ssh -c 'composer install'
-```
-
-While this will update them:
-
-```bash
-$ vagrant ssh -c 'composer update'
-```
-
-While running, Vagrant maps your host port 8080 to port 80 on the virtual
-machine; you can visit the site at http://localhost:8080/
-
-> ### Vagrant and VirtualBox
+> ### Linux users
 >
-> The vagrant image is based on bento/ubuntu-18.04. If you are using VirtualBox as
-> a provider, you will need:
+> On PHP versions prior to 7.1.14 and 7.2.2, this command might not work as
+> expected due to a bug in PHP that only affects linux environments. In such
+> scenarios, you will need to start the [built-in web
+> server](http://php.net/manual/en/features.commandline.webserver.php) yourself,
+> using the following command:
 >
-> - Vagrant 2.2.6 or later
-> - VirtualBox 6.0.14 or later
+> ```bash
+> $ php -S 0.0.0.0:8080 -t public/ public/index.php
+> ```
 
-For vagrant documentation, please refer to [vagrantup.com](https://www.vagrantup.com/)
+> ### Setting a timeout
+>
+> Composer commands time out after 300 seconds (5 minutes). On Linux-based
+> systems, the `php -S` command that `composer serve` spawns continues running
+> as a background process, but on other systems halts when the timeout occurs.
+>
+> As such, we recommend running the `serve` script using a timeout. This can
+> be done by using `composer run` to execute the `serve` script, with a
+> `--timeout` option. When set to `0`, as in the previous example, no timeout
+> will be used, and it will run until you cancel the process (usually via
+> `Ctrl-C`). Alternately, you can specify a finite timeout; as an example,
+> the following will extend the timeout to a full day:
+>
+> ```bash
+> $ composer run --timeout=86400 serve
+> ```
 
-## Using docker-compose
+## Installing alternative packages
 
-This skeleton provides a `docker-compose.yml` for use with
-[docker-compose](https://docs.docker.com/compose/); it
-uses the provided `Dockerfile` to build a docker image 
-for the `laminas` container created with `docker-compose`.
+There is a feature to install alternative packages: Instead of entering one of
+the selection **you can actually type the package name and version**.
 
-Build and start the image and container using:
+> ```
+>   Which template engine do you want to use?
+>   [1] Plates
+>   [2] Twig
+>   [3] zend-view installs zend-servicemanager
+>   [n] None of the above
+>   Make your selection or type a composer package name and version (n): infw/pug:0.1
+>   - Searching for infw/pug:0.1
+>   - Adding package infw/pug (0.1)
+> ```
 
-```bash
-$ docker-compose up -d --build
-```
+That feature allows you to install any alternative package you want. It has its limitations though:
 
-At this point, you can visit http://localhost:8080 to see the site running.
+* The alternative package must follow this format `namespace/package:1.0`. It needs the correct version.
+* Templates are not copied, but the ConfigProvider can be configured in such way that it uses the
+  default templates directly from the package itself.
+* This doesn't work for containers as the container.php file needs to be copied.
 
-You can also run commands such as `composer` in the container.  The container 
-environment is named "laminas" so you will pass that value to 
-`docker-compose run`:
+## Troubleshooting
 
-```bash
-$ docker-compose run laminas composer install
-```
+If the installer fails during the ``composer create-project`` phase, please go
+through the following list before opening a new issue. Most issues we have seen
+so far can be solved by `self-update` and `clear-cache`.
 
-Some composer packages optionally use additional PHP extensions.  
-The Dockerfile contains several commented-out commands 
-which enable some of the more popular php extensions. 
-For example, to install `pdo-pgsql` support for `laminas/laminas-db`
-uncomment the lines:
+1. Be sure to work with the latest version of composer by running `composer self-update`.
+2. Try clearing Composer's cache by running `composer clear-cache`.
 
-```sh
-# RUN apt-get install --yes libpq-dev \
-#     && docker-php-ext-install pdo_pgsql
-```
+If neither of the above help, you might face more serious issues:
 
-then re-run the `docker-compose up -d --build` line as above.
+- Info about the [zlib_decode error](https://github.com/composer/composer/issues/4121).
+- Info and solutions for [composer degraded mode](https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode).
 
-> You may also want to combine the various `apt-get` and `docker-php-ext-*`
-> statements later to reduce the number of layers created by your image.
+## Application Development Mode Tool
 
-## Web server setup
+This skeleton comes with [laminas-development-mode](https://github.com/laminas/laminas-development-mode).
+It provides a composer script to allow you to enable and disable development mode.
 
-### Apache setup
+### To enable development mode
 
-To setup apache, setup a virtual host to point to the public/ directory of the
-project and you should be ready to go! It should look something like below:
-
-```apache
-<VirtualHost *:80>
-    ServerName laminasapp.localhost
-    DocumentRoot /path/to/laminasapp/public
-    <Directory /path/to/laminasapp/public>
-        DirectoryIndex index.php
-        AllowOverride All
-        Order allow,deny
-        Allow from all
-        <IfModule mod_authz_core.c>
-        Require all granted
-        </IfModule>
-    </Directory>
-</VirtualHost>
-```
-
-### Nginx setup
-
-To setup nginx, open your `/path/to/nginx/nginx.conf` and add an
-[include directive](http://nginx.org/en/docs/ngx_core_module.html#include) below
-into `http` block if it does not already exist:
-
-```nginx
-http {
-    # ...
-    include sites-enabled/*.conf;
-}
-```
-
-
-Create a virtual host configuration file for your project under `/path/to/nginx/sites-enabled/laminasapp.localhost.conf`
-it should look something like below:
-
-```nginx
-server {
-    listen       80;
-    server_name  laminasapp.localhost;
-    root         /path/to/laminasapp/public;
-
-    location / {
-        index index.php;
-        try_files $uri $uri/ @php;
-    }
-
-    location @php {
-        # Pass the PHP requests to FastCGI server (php-fpm) on 127.0.0.1:9000
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_param  SCRIPT_FILENAME /path/to/laminasapp/public/index.php;
-        include fastcgi_params;
-    }
-}
-```
-
-Restart the nginx, now you should be ready to go!
-
-## QA Tools
-
-The skeleton does not come with any QA tooling by default, but does ship with
-configuration for each of:
-
-- [phpcs](https://github.com/squizlabs/php_codesniffer)
-- [laminas-test](https://docs.laminas.dev/laminas-test/)
-- [phpunit](https://phpunit.de)
-
-Additionally, it comes with some basic tests for the shipped
-`Application\Controller\IndexController`.
-
-If you want to add these QA tools, execute the following:
+**Note:** Do NOT run development mode on your production server!
 
 ```bash
-$ composer require --dev squizlabs/php_codesniffer laminas/laminas-test
+$ composer development-enable
 ```
 
-We provide aliases for each of these tools in the Composer configuration:
+**Note:** Enabling development mode will also clear your configuration cache, to
+allow safely updating dependencies and ensuring any new configuration is picked
+up by your application.
+
+### To disable development mode
 
 ```bash
-# Run CS checks:
-$ composer cs-check
-# Fix CS errors:
-$ composer cs-fix
-# Run PHPUnit tests:
+$ composer development-disable
+```
+
+### Development mode status
+
+```bash
+$ composer development-status
+```
+
+## Configuration caching
+
+By default, the skeleton will create a configuration cache in
+`data/config-cache.php`. When in development mode, the configuration cache is
+disabled, and switching in and out of development mode will remove the
+configuration cache.
+
+You may need to clear the configuration cache in production when deploying if
+you deploy to the same directory. You may do so using the following:
+
+```bash
+$ composer clear-config-cache
+```
+
+You may also change the location of the configuration cache itself by editing
+the `config/config.php` file and changing the `config_cache_path` entry of the
+local `$cacheConfig` variable.
+
+## Skeleton Development
+
+This section applies only if you cloned this repo with `git clone`, not when you
+installed mezzio with `composer create-project ...`.
+
+If you want to run tests against the installer, you need to clone this repo and
+setup all dependencies with composer.  Make sure you **prevent composer running
+scripts** with `--no-scripts`, otherwise it will remove the installer and all
+tests.
+
+```bash
+$ composer update --no-scripts
 $ composer test
 ```
+
+Please note that the installer tests remove installed config files and templates
+before and after running the tests.
+
+Before contributing read [the contributing guide](https://github.com/mezzio/.github/blob/master/CONTRIBUTING.md).
